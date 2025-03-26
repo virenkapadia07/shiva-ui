@@ -1,0 +1,345 @@
+{% extends 'base.html' %} {% block content%}
+<div class="mt-1">
+  <div class="row g-2">
+    <div class="col-md-2 mb-2 text-center">
+      <div class="card card-stat widget-card border-light shadow-sm">
+        <div class="card-body">
+          <h5 class="card-title">Unique IPs</h5>
+          <p class="text-center fw-bold fs-2">{{records.ips_count}}</p>
+        </div>
+      </div>
+    </div>
+    <div class="col-md-2 mb-2 text-center">
+      <div class="card card-stat widget-card border-light shadow-sm">
+        <div class="card-body">
+          <h5 class="card-title">Unique Senders</h5>
+          <p class="text-center fw-bold fs-2">{{records.sender_count}}</p>
+        </div>
+      </div>
+    </div>
+    <div class="col-md-2 mb-2 text-center">
+      <div class="card card-stat widget-card border-light shadow-sm">
+        <div class="card-body">
+          <h5 class="card-title">Unique Recipient</h5>
+          <p class="text-center fw-bold fs-2">{{records.receiver_count}}</p>
+        </div>
+      </div>
+    </div>
+    <div class="col-md-2 mb-2 text-center">
+      <div class="card card-stat widget-card border-light shadow-sm">
+        <div class="card-body">
+          <h5 class="card-title">Emails Processed</h5>
+          <p class="text-center fw-bold fs-2">
+            {{records.processed_email_count}}
+          </p>
+        </div>
+      </div>
+    </div>
+    <div class="col-md-2 mb-2 text-center">
+      <div class="card card-stat widget-card border-light shadow-sm">
+        <div class="card-body">
+          <h5 class="card-title">Campaigns Detected</h5>
+          <p class="text-center fw-bold fs-2">
+            {{records.email_campaigns_count}}
+          </p>
+        </div>
+      </div>
+    </div>
+    <div class="col-md-2 mb-2 text-center">
+      <div class="card card-stat widget-card border-light shadow-sm">
+        <div class="card-body">
+          <h5 class="card-title">Attachments</h5>
+          <p class="text-center fw-bold fs-2">{{records.attachment_count}}</p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="row">
+    <!-- Charts Section -->
+    <div class="col-md-4 mb-4 border-light">
+      <div class="chart-container">
+        <div id="email_processed_chart"></div>
+      </div>
+    </div>
+
+    <div class="col-md-4 mb-4 border-light">
+      <div class="chart-container">
+        <div id="campaign_heatmap"></div>
+      </div>
+    </div>
+    <div class="col-md-4 mb-4 border-light">
+      <div class="chart-container">
+        <div id="file_extension_chart"></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="row">
+    <div class="col-md-3 mb-4 border-light">
+      <div class="chart-container">
+        <div id="top_target_domains"></div>
+      </div>
+    </div>
+
+    <div class="col-md-6 mb-4 border-light">
+      <div class="chart-container">
+        <div id="top_source_ip_chart"></div>
+      </div>
+    </div>
+
+    <div class="col-md-3 mb-4 border-light">
+      <div class="chart-container">
+        <div id="top_url_domain_chart"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+  // EMAIL PROCESSED START
+  var email_processed_chart_options = {
+    series: [
+      {
+        name: "Mail Recieved",
+        data: {{ records.per_day_email.data | tojson }},
+      },
+    ],
+    chart: {
+      height: 350,
+      type: "line",
+      zoom: {
+        enabled: false,
+      },
+      toolbar: { show: false },
+    },
+    dataLabels: {
+      enabled: false,
+    },
+    stroke: {
+      curve: "smooth",
+    },
+    title: {
+      text: "Mails Processed per Day",
+      align: "center",
+    },
+    xaxis: {
+      categories: {{ records.per_day_email.labels | tojson }},
+    },
+  };
+
+  var chart = new ApexCharts(
+    document.getElementById("email_processed_chart"),
+    email_processed_chart_options
+  );
+  chart.render();
+  // EMAIL PROCESSED END
+
+  // campaign_heatmap START
+  var campaign_heatmap_options = {
+    series: [
+      {
+        data: {{records.top_campaigns | tojson}}
+      },
+    ],
+    legend: {
+      show: false,
+    },
+    chart: {
+      height: 350,
+      type: "treemap",
+      toolbar: { show: false },
+    },
+    title: {
+      text: "Campaigns Overview",
+      align:'center'
+    },
+  };
+  var chart = new ApexCharts(
+    document.getElementById("campaign_heatmap"),
+    campaign_heatmap_options
+  );
+  chart.render();
+  // campaign_heatmap END
+
+  // file_extension_chart START
+  var file_extension_chart_options = {
+    series: [
+      {
+        name: "Extension",
+        data: {{ records.top_file_exensions.data | tojson }},
+      },
+    ],
+    chart: {
+      height: 350,
+      type: "bar",
+      toolbar: {
+        show: false,
+      },
+    },
+    plotOptions: {
+      bar: {
+        borderRadius: 1,
+        columnWidth: "50%",
+      },
+    },
+    dataLabels: {
+      enabled: false,
+    },
+    stroke: {
+      width: 0,
+    },
+    title: {
+      text: "Top 10 File Extensions",
+      align: "center",
+    },
+    xaxis: {
+      labels: {
+        rotate: -45,
+      },
+      categories: {{ records.top_file_exensions.labels | tojson }},
+      tickPlacement: "on",
+    },
+    fill: {
+      type: "gradient",
+      gradient: {
+        shade: "light",
+        type: "horizontal",
+      },
+    },
+  };
+
+  var chart = new ApexCharts(
+    document.getElementById("file_extension_chart"),
+    file_extension_chart_options
+  );
+  chart.render();
+  // file_extension_chart END
+
+  // top_target_domains START
+  var top_target_domains_options = {
+    series: {{ records.top_targeted_domains.data | tojson }},
+    chart: {
+      type: "donut",
+    },
+    labels: {{ records.top_targeted_domains.labels | tojson }},
+    dataLabels: {
+      enabled: false,
+    },
+    responsive: [
+      {
+        breakpoint: 480,
+        options: {
+          chart: {
+            width: 200,
+          },
+          legend: {
+            position: "bottom",
+          },
+        },
+      },
+    ],
+    title: {
+      text: "Target Domains",
+      align: "center",
+    },
+  };
+
+  var chart = new ApexCharts(
+    document.getElementById("top_target_domains"),
+    top_target_domains_options
+  );
+  chart.render();
+  // top_target_domains END
+
+  // Top Sender IPs START
+  var top_source_ip_chart_options = {
+    series: [
+      {
+        name: "IP",
+        data: {{ records.top_sender_ips.data | tojson }},
+      },
+    ],
+    chart: {
+      height: 215,
+      type: "bar",
+      toolbar: {
+        show: false,
+      },
+    },
+    plotOptions: {
+      bar: {
+        borderRadius: 1,
+        columnWidth: "50%",
+      },
+    },
+    dataLabels: {
+      enabled: false,
+    },
+    stroke: {
+      width: 0,
+    },
+    title: {
+      text: "Top 10 Sender IPs",
+      align: "center",
+    },
+    xaxis: {
+      categories: {{ records.top_sender_ips.labels | tojson }},
+      tickPlacement: "on",
+    },
+    fill: {
+      type: "gradient",
+      gradient: {
+        shade: "light",
+        type: "horizontal",
+      },
+    },
+  };
+
+  var chart = new ApexCharts(
+    document.getElementById("top_source_ip_chart"),
+    top_source_ip_chart_options
+  );
+  chart.render();
+
+  // Top Sender IPs END
+
+
+  // Top Url's Domain START
+  var top_url_domain_chart_options = {
+    series: {{ records.top_url_domains.data | tojson }},
+    chart: {
+      type: "pie",
+    },
+    labels: {{ records.top_url_domains.labels | tojson }},
+    dataLabels: {
+      enabled: false,
+    },
+    responsive: [
+      {
+        breakpoint: 480,
+        options: {
+          chart: {
+            width: 200,
+          },
+          legend: {
+            position: "bottom",
+          },
+        },
+      },
+    ],
+    title: {
+      text: "Top URL's Domain",
+      align: "center",
+    },
+  };
+
+  var chart = new ApexCharts(
+    document.getElementById("top_url_domain_chart"),
+    top_url_domain_chart_options
+  );
+  chart.render();
+  // Top Url's Domain END
+</script>
+
+{% endblock %}

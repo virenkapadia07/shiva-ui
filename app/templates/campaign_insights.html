@@ -1,0 +1,123 @@
+{% extends 'base.html' %} {% block content%}
+
+<div class="mt-1">
+  <div class="row g-2">
+    <div class="col-md-3 mb-2 text-center">
+      <div class="card card-stat widget-card border-light shadow-sm">
+        <div class="card-body">
+          <h5 class="card-title">Mails</h5>
+          <p class="text-center fw-bold fs-2">{{stats.total_emails}}</p>
+        </div>
+      </div>
+    </div>
+    <div class="col-md-3 mb-2 text-center">
+      <div class="card card-stat widget-card border-light shadow-sm">
+        <div class="card-body">
+          <h5 class="card-title">Attachments</h5>
+          <p class="text-center fw-bold fs-2">{{stats.total_attachments}}</p>
+        </div>
+      </div>
+    </div>
+    <div class="col-md-3 mb-2 text-center">
+      <div class="card card-stat widget-card border-light shadow-sm">
+        <div class="card-body">
+          <h5 class="card-title">Victims</h5>
+          <p class="text-center fw-bold fs-2">{{stats.total_victims}}</p>
+        </div>
+      </div>
+    </div>
+    <div class="col-md-3 mb-2 text-center">
+      <div class="card card-stat widget-card border-light shadow-sm">
+        <div class="card-body">
+          <h5 class="card-title">Senders</h5>
+          <p class="text-center fw-bold fs-2">{{stats.total_attachments}}</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="container-fluid mt-4">
+  <table class="table table-bordered table-hover table-striped">
+    <thead>
+      <tr>
+        <th scope="col">#</th>
+        <th scope="col">Subject</th>
+        <th scope="col">Sender Email</th>
+        <th scope="col">Sender IP</th>
+        <th scope="col">Total Recipient(s)</th>
+        <th scope="col">Total Attachments</th>
+        <th scope="col">Send At</th>
+        <th scope="col">Action</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% if records %} {% for record in records %}
+      <tr>
+        <th scope="row">{{((page -1) * size) + loop.index}}</th>
+        <td>{{record.subject}}</td>
+        <td>{{record.email}}</td>
+        <td>{{record.sender_ip}}</td>
+        <td>{{record.recipient_count}}</td>
+        <td>{{record.total_attachments}}</td>
+        <td>{{record.send_at}}</td>
+        <td>
+          <a
+            href="{{url_for('main.email_details', campaign_id=campaign_id, mail_id=record.id)}}"
+            class="btn btn-primary"
+            >View More</a
+          >
+        </td>
+      </tr>
+      {% endfor %} {% else %}
+      <tr class="text-center">
+        <td colspan="8">No Records Found</td>
+      </tr>
+      {% endif %}
+    </tbody>
+  </table>
+
+  <nav aria-label="Page navigation">
+    <ul class="pagination">
+      <!-- Previous Page -->
+      <li class="page-item {% if page == 1 %}disabled{% endif %}">
+        <a class="page-link" href="?page={{ page - 1 }}&size={{ size }}"
+          >Previous</a
+        >
+      </li>
+  
+      <!-- Page Numbers -->
+      {% if page > 3 %}
+      <li class="page-item">
+        <a class="page-link" href="?page=1&size={{ size }}">1</a>
+      </li>
+      <li class="page-item disabled">
+        <span class="page-link">...</span>
+      </li>
+      {% endif %} {% for i in page_range %}
+      <li class="page-item {% if i == page %}active{% endif %}">
+        <a class="page-link" href="?page={{ i }}&size={{ size }}">{{ i }}</a>
+      </li>
+      {% endfor %} {% if page < total_pages - 2 %}
+      <li class="page-item disabled">
+        <span class="page-link">...</span>
+      </li>
+      <li class="page-item">
+        <a class="page-link" href="?page={{ total_pages }}&size={{ size }}"
+          >{{ total_pages }}</a
+        >
+      </li>
+      {% endif %}
+  
+      <!-- Next Page -->
+      <li class="page-item {% if page == total_pages %}disabled{% endif %}">
+        <a class="page-link" href="?page={{ page + 1 }}&size={{ size }}"
+          >Next</a
+        >
+      </li>
+    </ul>
+  </nav>
+  
+</div>
+
+{% endblock %}

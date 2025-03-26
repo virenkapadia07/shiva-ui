@@ -1,0 +1,127 @@
+{% extends 'base.html' %} {% block content%}
+<style>
+  .email-details-section {
+    background-color: #f8f9fa;
+    padding: 20px;
+    border-radius: 8px;
+    box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+    margin-bottom: 20px;
+  }
+  .tab-content {
+    background-color: #f1f3f5;
+    padding: 20px;
+    border-radius: 8px;
+  }
+  .attachment {
+    margin: 10px 0;
+  }
+  .attachment a {
+    color: #007bff;
+    text-decoration: none;
+  }
+  .attachment-meta {
+    font-size: 0.9em;
+    color: #6c757d;
+  }
+  .copy-btn {
+    cursor: pointer;
+    margin-left: 10px;
+    color: #007bff;
+  }
+</style>
+<!-- Font Awesome for Icons -->
+<link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" rel="stylesheet">
+<div class="container">
+  <!-- Email Details Section -->
+  <div class="email-details-section">
+    <div class="d-flex justify-content-between">
+      <h4>Email Details</h4>
+      <a href="/path/to/email.eml" download title="Download EML file"><i class="fa-solid fa-download" ></i></a>
+    </div>
+    <p><strong>From:</strong> <span id="from">{{record.email}}</span></p>
+    <p><strong>Sender IP:</strong> <span id="sender_ip">{{record.sender_ip}}</span></p>
+    <p><strong>Recipients:</strong> <span id="recipients">{{', '.join(record.unique_recipients)}}</span></p>
+    <p><strong>Subject:</strong> <span id="subject">{{record.subject}}</span></p>
+    <p><strong>Body:</strong></p>
+    <!-- Email Body using <pre> and <code> -->
+    <pre><code id="email_body">{{record.email_body}}</code></pre>
+  </div>
+
+  <!-- Nav Tabs for IOCs and Attachments -->
+   <br>
+  <h4 class="mt-4 mb-3">Indicators of Compromise (IOCs)</h4>
+  <ul class="nav nav-tabs" id="myTab" role="tablist">
+    <li class="nav-item" role="presentation">
+      <a class="nav-link {% if not record.urls_details %}disabled{% else %} active {%endif %}" id="ioc-tab" data-bs-toggle="tab" href="#ioc" role="tab" aria-controls="ioc" aria-selected="true">URL(s)</a>
+    </li>
+    <li class="nav-item" role="presentation">
+      <a class="nav-link {% if not  record.attachments_details %}disabled {%endif %}" id="attachments-tab" data-bs-toggle="tab" href="#attachments" role="tab" aria-controls="attachments" aria-selected="false">Attachment(s)</a>
+    </li>
+  </ul>
+
+  <div class="tab-content mt-3" id="myTabContent">
+    <!-- IOCs Tab Content -->
+
+    <div class="tab-pane fade show active" id="ioc" role="tabpanel" aria-labelledby="ioc-tab">
+      {% if record.urls_details %}
+      <ul>
+      {% for urls_detail in record.urls_details %}
+          <li>
+          <div >
+            <strong>URL: </strong> <a href="{{urls_detail.url}}" id="ioc_url">{{urls_detail.url}}</a> <i class="fa fa-copy copy-btn" onclick="copyText('#ioc_url')"></i> 
+            <br><strong>Domain: </strong>{{urls_detail.domain}} 
+            <br><strong>SHA256: </strong> <code id="attachment1_sha256">{{urls_detail.url_sha256}}</code> <i class="fa fa-copy copy-btn" onclick="copyText('#attachment1_sha256')"></i>
+          </div>
+        </li>
+      </ul>
+      {% endfor %}
+      {% endif %}
+    </div>
+
+    <!-- Attachments Tab Content -->
+    <div class="tab-pane fade" id="attachments" role="tabpanel" aria-labelledby="attachments-tab">
+      {% if record.attachments_details %}
+      <ul>
+      {% for attachments_details in record.attachments_details %}
+          <li>
+          <div >
+            <strong>Name: </strong>{{attachments_details.file_name}} <a href="{{attachments_details.attachment_file_url}}" download><i class="fa-solid fa-download"></i></a>
+            <br><strong>SHA256: </strong> <code id="attachment1_sha256">{{attachments_details.file_sha256}}</code> <i class="fa fa-copy copy-btn" onclick="copyText('#attachment1_sha256')"></i>
+            <br><strong>Type: </strong>{{attachments_details.file_extension}} 
+
+            {% if attachments_details.file_size < 1024 %}
+                {% set file_size = attachments_details.file_size %}
+                {% set unit = 'Bytes' %}
+            {% elif attachments_details.file_size < 1024 * 1024 %}
+                {% set file_size = attachments_details.file_size / 1024 %}
+                {% set unit = 'KB' %}
+            {% elif attachments_details.file_size < 1024 * 1024 * 1024 %}
+                {% set file_size = attachments_details.file_size / (1024 * 1024) %}
+                {% set unit = 'MB' %}
+            {% else %}
+                {% set file_size = attachments_details.file_size / (1024 * 1024 * 1024) %}
+                {% set unit = 'GB' %}
+            {% endif %}
+            <br><strong>Size: </strong>{{ file_size | round(2) }} {{ unit }} 
+          </div>
+        </li>
+      </ul>
+      {% endfor %}
+      
+      {% endif %}
+      
+    </div>
+  </div>
+</div>
+
+<script>
+  function copyText(elementId) {
+    const text = document.querySelector(elementId).textContent || document.querySelector(elementId).innerText;
+    navigator.clipboard.writeText(text).then(() => {
+      alert('Copied to clipboard!');
+    }).catch(err => {
+      alert('Failed to copy: ' + err);
+    });
+  }
+</script>
+{% endblock %}

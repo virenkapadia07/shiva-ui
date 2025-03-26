@@ -1,0 +1,320 @@
+{% extends 'base.html' %} {% block content%}
+<div class="mt-1">
+  <div class="row g-2">
+    <div class="col-md-2 mb-2 text-center">
+      <div class="card card-stat widget-card border-light shadow-sm">
+        <div class="card-body">
+          <h5 class="card-title">Unique IPs</h5>
+          <p class="text-center fw-bold fs-2">{{records.ips_count}}</p>
+        </div>
+      </div>
+    </div>
+    <div class="col-md-2 mb-2 text-center">
+      <div class="card card-stat widget-card border-light shadow-sm">
+        <div class="card-body">
+          <h5 class="card-title">Unique Senders</h5>
+          <p class="text-center fw-bold fs-2">{{records.sender_count}}</p>
+        </div>
+      </div>
+    </div>
+    <div class="col-md-2 mb-2 text-center">
+      <div class="card card-stat widget-card border-light shadow-sm">
+        <div class="card-body">
+          <h5 class="card-title">Unique Recipient</h5>
+          <p class="text-center fw-bold fs-2">{{records.receiver_count}}</p>
+        </div>
+      </div>
+    </div>
+    <div class="col-md-2 mb-2 text-center">
+      <div class="card card-stat widget-card border-light shadow-sm">
+        <div class="card-body">
+          <h5 class="card-title">Emails Processed</h5>
+          <p class="text-center fw-bold fs-2">{{records.processed_email_count}}</p>
+        </div>
+      </div>
+    </div>
+    <div class="col-md-2 mb-2 text-center">
+      <div class="card card-stat widget-card border-light shadow-sm">
+        <div class="card-body">
+          <h5 class="card-title">Campaigns Detected</h5>
+          <p class="text-center fw-bold fs-2">{{records.email_campaigns_count}}</p>
+        </div>
+      </div>
+    </div>
+    <div class="col-md-2 mb-2 text-center">
+      <div class="card card-stat widget-card border-light shadow-sm">
+        <div class="card-body">
+          <h5 class="card-title">Attachments</h5>
+          <p class="text-center fw-bold fs-2">{{records.attachment_count}}</p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="row">
+    <!-- Charts Section -->
+    <div class="col-md-4 mb-4 border-light">
+      <div class="chart-container">
+        <canvas id="lineChart"></canvas>
+      </div>
+    </div>
+
+    <div class="col-md-4 mb-4 border-light">
+      <div class="chart-container">
+        <canvas id="barChart_1"></canvas>
+      </div>
+    </div>
+    <div class="col-md-4 mb-4 border-light">
+      <div class="chart-container">
+        <canvas id="barChart_2"></canvas>
+      </div>
+    </div>
+  </div>
+
+  <div class="row">
+    <div class="col-md-3 mb-4 border-light">
+      <div class="chart-container">
+        <canvas id="pieChart"></canvas>
+      </div>
+    </div>
+
+    <div class="col-md-3 mb-4 border-light">
+      <div class="chart-container">
+        <canvas id="pieChart2"></canvas>
+      </div>
+    </div>
+
+    <div class="col-md-3 mb-4 border-light">
+      <div class="chart-container">
+        <canvas id="doughnut"></canvas>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+  // Line Chart Data
+  const lineChartData = {
+    labels: [
+      "25-02-2025",
+      "26-02-2025",
+      "27-02-2025",
+      "27-02-2025",
+      "28-02-2025",
+      "01-03-2025",
+      "02-03-2025",
+    ],
+    datasets: [
+      {
+        label: "Page Views",
+        data: [500, 100, 734, 424, 1000, 1242, 123],
+        borderColor: "#2575fc",
+        backgroundColor: "rgba(37, 117, 252, 0.2)",
+        fill: true,
+        tension: 0.4,
+      },
+    ],
+  };
+
+  // Bar Chart Data
+  const barChart_1Data = {
+    labels: ["127.0.0.1", "172.168.2.1", "10.12.23.45", "10.10.10.10"],
+    datasets: [
+      {
+        label: "IP Addresses",
+        data: [300, 500, 400, 600],
+        borderWidth: 1,
+      },
+    ],
+  };
+
+  const barChart_2Data = {
+    labels: ["exe", "pdf", "xlsx", "png", "jpeg", "docx", "sh"],
+    datasets: [
+      {
+        label: "Files",
+        data: [300, 500, 400, 600, 700, 800, 850],
+        borderWidth: 1,
+      },
+    ],
+  };
+
+  const pieChart_Data = {
+    labels: ["Campaign 1", "Campaign 2", "Campaign 3"],
+    datasets: [
+      {
+        label: "My First Dataset",
+        data: [91, 21, 43],
+        hoverOffset: 4,
+      },
+    ],
+  };
+
+  const pieChart_2Data = {
+    labels: ["Mozilla Thunderbird", "Outlook", "Mailer"],
+    datasets: [
+      {
+        label: "User Agent",
+        data: [74, 97, 59],
+        hoverOffset: 4,
+      },
+    ],
+  };
+
+  const doughnut_Data = {
+    labels: [
+      "example.com",
+      "google.com",
+      "testing.com",
+      "helloworld.com",
+      "test.com",
+    ],
+    datasets: [
+      {
+        label: "Domains",
+        data: [30, 83, 81, 44, 6],
+        hoverOffset: 4,
+      },
+    ],
+  };
+
+  // Chart.js Line Chart
+  const lineChartConfig = {
+    type: "line",
+    data: lineChartData,
+    options: {
+      responsive: true,
+      plugins: {
+        legend: {
+          position: "top",
+        },
+        title: {
+          display: true,
+          text: "Emails Processed per Day",
+        },
+      },
+
+      scales: {
+        y: {
+          beginAtZero: true,
+        },
+      },
+    },
+  };
+
+  // Chart.js Bar Chart
+  const barChart_1Config = {
+    type: "bar",
+    data: barChart_1Data,
+    options: {
+      responsive: true,
+      plugins: {
+        legend: {
+          position: "top",
+        },
+        title: {
+          display: true,
+          text: "Top Source IPs",
+        },
+      },
+    },
+  };
+
+  const barChart_2Config = {
+    type: "bar",
+    data: barChart_2Data,
+    options: {
+      responsive: true,
+      plugins: {
+        legend: {
+          position: "top",
+        },
+        title: {
+          display: true,
+          text: "File Extensions",
+        },
+      },
+    },
+  };
+
+  const pieChart_Config = {
+    type: "pie",
+    data: pieChart_Data,
+    options: {
+      responsive: true,
+      plugins: {
+        legend: {
+          position: "top",
+        },
+        title: {
+          display: true,
+          text: "Top Campaigns",
+        },
+      },
+    },
+  };
+
+  const pieChart_2Config = {
+    type: "pie",
+    data: pieChart_2Data,
+    options: {
+      responsive: true,
+      plugins: {
+        legend: {
+          position: "top",
+        },
+        title: {
+          display: true,
+          text: "Top User Agent(s)",
+        },
+      },
+    },
+  };
+
+  const doughnut_config = {
+    type: "doughnut",
+    data: doughnut_Data,
+    options: {
+      responsive: true,
+      plugins: {
+        legend: {
+          position: "top",
+        },
+        title: {
+          display: true,
+          text: "Top URL's domain",
+        },
+      },
+    },
+  };
+  // Rendering the charts
+  const lineChart = new Chart(
+    document.getElementById("lineChart"),
+    lineChartConfig
+  );
+  const barChart_1 = new Chart(
+    document.getElementById("barChart_1"),
+    barChart_1Config
+  );
+
+  const barChart_2 = new Chart(
+    document.getElementById("barChart_2"),
+    barChart_2Config
+  );
+
+  const pieChart = new Chart(
+    document.getElementById("pieChart"),
+    pieChart_Config
+  );
+  const pieChart2 = new Chart(
+    document.getElementById("pieChart2"),
+    pieChart_2Config
+  );
+
+  const doughnut = new Chart(
+    document.getElementById("doughnut"),
+    doughnut_config
+  );
+</script>
+
+{% endblock %}
